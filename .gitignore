@@ -1,0 +1,10 @@
+*.zip
+*.7z
+*.rar
+*.pcap
+*.pcapng
+*.cap
+*.pyc
+__pycache__/
+.DS_Store
+Thumbs.db
