@@ -1,19 +1,58 @@
 # boroCTF Writeups
 
-My collection of writeups and challenge solutions from boroCTF.
+A collection of my writeups and solutions for challenges from **boroCTF**.
 
-## Categories
+---
 
-- OSINT
-- WEB
-- FORENSICS
-- REVERSE ENGINEERING
-- PWN
-- CRYPTO
-- MISC
+## Statistics
+
+| Category            | Solves |
+| ------------------- | -----: |
+| OSINT               |      4 |
+| PWN                 |      3 |
+| REVERSE_ENGINEERING |      2 |
+| FORENSICS           |      1 |
+| MISC                |      1 |
+| CRYPTO              |      0 |
+| WEB                 |      0 |
+
+**Total Solves:** 11
+
+---
+
+## Challenge Writeups
+
+### OSINT
+
+* Poland Spring
+* Geopro 3
+* Geopro 4
+* Geopro 5
+
+### PWN
+
+* Two Words, One Problem
+* Mania
+* Jin Sakai
+
+### REVERSE ENGINEERING
+
+* Franklin
+* Cat in the Box?
+
+### FORENSICS
+
+* Billie Eilish
+
+### MISC
+
+* G63p_G0d
+
+---
 
 ## Repository Structure
 
+```text
 boroCTF/
 ├── OSINT/
 ├── WEB/
@@ -23,11 +62,28 @@ boroCTF/
 ├── CRYPTO/
 ├── MISC/
 └── README.md
+```
 
-## Solved Challenges
+---
 
-| Challenge | Category | Status |
-|------------|----------|---------|
-| Poland Spring | OSINT | ✅ |
-| Billie Eilish | FORENSICS | ✅ |
-| G63p_G0d | MISC | ✅ |
+## Tools Frequently Used
+
+* Ghidra
+* pwntools
+* GDB
+* strings
+* file
+* checksec
+* binwalk
+* exiftool
+* grep
+* CyberChef
+* Google Maps
+* Google Lens
+
+---
+
+## Disclaimer
+
+These writeups are intended for educational purposes and CTF learning only.
+
