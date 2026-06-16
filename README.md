@@ -14,7 +14,7 @@ A collection of my writeups and solutions for challenges from **boroCTF**.
 | FORENSICS           |      1 |
 | MISC                |      1 |
 | CRYPTO              |      0 |
-| WEB                 |      0 |
+| WEB                 |      1 |
 
 **Total Solves:** 11
 
